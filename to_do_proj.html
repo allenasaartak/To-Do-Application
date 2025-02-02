@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo app</title>
+    <style>
+        *{ 
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root{
+            --background: #000430;
+            --secondaryBackground: #171c48;
+            --text: #fff;
+            --purple: #828dff;
+            --teal: #24feee;
+        
+        }
+        
+        body{
+            background-color: var(--background);
+            color: var(--text);
+        }
+        
+        .container{
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            margin: 120px auto 0 auto;
+            max-width:500px;
+        
+        }
+        
+        .stats-container{
+            padding:30px;
+            border-radius:20px;
+            border: 2px solid var(--purple);
+            display: flex;
+            justify-content:center;
+            gap: 50px;
+            width: 100%;
+        }
+        
+        .details{
+            width:100%;
+        }
+        
+        #progressBar{
+            width:100%;
+            height:10px;
+            background-color: var(--secondaryBackground);
+            border-radius: 5px;
+            margin-top:20px;
+        }
+        
+        #progress{
+            width:0%;
+            height:10px;
+            background-color:var(--teal);
+            border-radius:10px;
+            transition: all 0.3s  ease;
+        }
+        
+        #numbers{
+            width:100px;
+            height:100px;
+            background-color: var(--purple);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius: 50%;
+            font-size:20px;
+            font-weight:bold
+        }
+        form{
+            margin-top:60px;
+            width:100%;
+            display:flex;
+            gap:10px;
+        }
+        input{
+            flex:1;
+            padding: 16px;
+            background-color: var(--secondaryBackground);
+            border: 1px solid var(--purple);
+            border-radius:10px;
+            outline:none;
+            color: var(--text);
+        }
+        
+        button{
+            width: 50px;
+            height: 50px;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background-color:var(--purple);
+            color:var(--text);
+            font-size: 20px;
+            font-weight: bold;
+            outline: none; 
+        
+        }
+        #task-list{
+            display:flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 30px;
+            width: 100%;
+            list-style: none;
+        }
+        
+        .taskItem{
+            width: 100%;
+            display:flex;
+            background-color: var(--secondaryBackground);
+            padding: 10px;
+            border-radius: 10px;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task{
+            display: flex;
+            align-Items:center;
+            gap:10px;
+        }
+        .task input{
+            width: 20px;
+            height: 20px;
+        }
+        
+        .task.completed{
+            text-decoration: line-through;
+            color: var(--teal);
+        }
+        .taskItem img{
+            width:24px;
+            height: 24px;
+            margin: 0 10px;
+            cursor:pointer;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="stats-container">
+            <div class="details">
+                <h1>ToDo App</h1>
+                <p>Keep it up!</p>
+                <div id="progressBar">
+                    <div id="progress"></div>
+                </div>
+            </div>
+            <div class="stats-numbers">
+                <p id="numbers">0 / 0</p>
+            </div>
+        </div>
+
+        <form action="">
+            <input type="text" id="taskInput" placeholder = "Write your task">
+            <button id = "newTask"type ="submit">+</button>
+        </form>
+
+        <ul ID="task-list">
+            
+        </ul>
+    </div>
+    <script src = "./app.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () =>{
+            const storedTask = JSON.parse(localStorage.getItem(`tasks`))
+            if(storedTask){
+                storedTask.forEach((task) => tasks.push(task));
+                updateStats();
+                updateTasksList();
+            }
+        })
+        
+        let tasks = [];
+        
+        const saveTasks = () => {
+        localStorage.setItem(`tasks`,JSON.stringify(tasks))
+        }
+        
+        const addTask = ()=>
+        {
+            const taskInput = document.getElementById("taskInput")
+            if(!taskInput) return;
+            const text = taskInput.value.trim()
+            
+            if(text){
+                tasks.push({text:text,completed:false});
+                taskInput.value = "";
+                updateTasksList();
+                updateStats();
+                saveTasks();
+            }
+        }
+        
+        const toggleTaskComplete = (index)  => {
+            tasks[index].completed = !tasks[index].completed;
+            updateTasksList();
+            updateStats();
+            saveTasks();
+        };
+        
+        const deleteTask = (index) =>{
+            tasks.splice(index,1);
+            updateTasksList();
+            updateStats();
+            saveTasks();
+            saveTasks();
+        };
+        
+        const editTask = (index) =>{
+            const taskInput = document.getElementById("taskInput");
+            taskInput.value = tasks[index].text;
+        
+            tasks.splice(index,1);
+            updateTasksList();
+            updateStats();
+            saveTasks();
+        };
+        
+        const updateStats = () =>{
+            const completeTasks = tasks.filter(task=> task.completed).length
+            const totalTasks = tasks.length;
+            const progress = (completeTasks/totalTasks) *100;
+        
+            const progressBar = document.getElementById("progress");
+            progressBar.style.width = `${progress}%`
+        
+            document.getElementById(`numbers`).textContent = `${completeTasks} / ${totalTasks}`;
+        
+            if(tasks.length && completeTasks === totalTasks){
+                confetti();
+            }
+        };
+        
+        const updateTasksList = ()=>{
+            const tasklist = document.getElementById("task-list")
+            tasklist.innerHTML = "";
+            tasks.forEach((task,index) =>{
+                const listItem = document.createElement("li");
+        
+        listItem.innerHTML = `
+            <div class="taskItem">
+                <div class="task ${task.completed ? "completed" : ""}">
+                    <input type="checkbox" class="checkbox" ${task.completed ? "checked" : ""}/>
+                    <p>${task.text}</p>
+                </div>
+                <div class="icons">
+                    <img src="./img/edit.png" onClick="editTask(${index} )" alt = "edit_img"/>
+                    <img src="./img/bin.png" onClick="deleteTask(${index})" alt = "delete_img" />
+                </div>
+            </div>
+        `;
+        
+                listItem.addEventListener("change",()=> toggleTaskComplete(index))
+                tasklist.append(listItem);
+            });
+        };
+        
+        document.getElementById("newTask").addEventListener("click",function(e){
+            e.preventDefault()
+            addTask();
+        })
+        
+        
+        const confetti = () =>{
+        
+        }
+    </script>
+</body>
+</html>
